@@ -13,3 +13,5 @@
 
 /.envrc
 /package.yaml
+/go.sum
+/build/*

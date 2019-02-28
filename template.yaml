@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: 'AWS::Serverless-2016-10-31'
+Parameters:
+  Token:
+    Type: String
+  Username:
+    Type: String
+  Channel:
+    Type: String
+Resources:
+  CodepipelineSlack:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: codepipeline_slack # ファイル名
+      Runtime: go1.x 
+      CodeUri: build/
+      Timeout: 30
+      Environment:
+        Variables:
+          TOKEN: !Ref Token
+          USERNAME: !Ref Username
+          CHANNEL: !Ref Channel
+      Events:
+        CodepipelineEnd:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - "aws.codepipeline"
+              detail-type:
+                - "CodePipeline Pipeline Execution State Change"
+              detail:
+                state:
+                  - "SUCCEEDED"
+                  - "FAILED"
+
+  CodepipelineSlackLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CodepipelineSlack}
+      RetentionInDays: 30
